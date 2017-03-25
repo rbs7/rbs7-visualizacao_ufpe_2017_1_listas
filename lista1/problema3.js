@@ -1,12 +1,14 @@
-var margin = {top: 10, right: 10, bottom: 25, left: 25};
-var width = 500 - margin.left - margin.right;
-var height = 300 - margin.top - margin.bottom;
+var margin = {top: 35, right: 10, bottom: 50, left: 10};
+var width = 700 - margin.left - margin.right;
+var height = 400 - margin.top - margin.bottom;
+
+var parseTime = d3.timeParse("%b");
 
 var xScale = d3.scaleLinear().domain([0, 100]).range([0, width]);
 var yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]);
 var xAxisScale = d3.scaleLinear().domain([0, 11]).range([xScale(15), xScale(90)]);
 var yAxisScale = d3.scaleLinear().domain([10, 30]).range([yScale(10), yScale(90)]);
-var monthScale = d3.scaleOrdinal().domain(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]).range([xScale(15), xScale(90)]);
+var monthScale = d3.scaleTime().domain([parseTime("Jan"), parseTime("Dec")]).range(xAxisScale.range());
 
 var dataHigh  = [ 27.3, 28.0, 27.2, 25.1, 23.0, 21.8, 21.8, 23.3, 23.9, 24.8, 25.9, 26.3 ];
 var dataDaily = [ 22.1, 22.4, 21.8, 19.7, 17.4, 16.3, 15.8, 17.1, 17.9, 19.0, 20.2, 21.1 ];
@@ -21,14 +23,82 @@ var mySVG = d3.select("body").append("svg")
 
 var xAxisGroup = mySVG.append("g")
 .attr("class","xAxis")
-.attr("transform","translate(0,0)");
-var xAxis = d3.axisBottom(xAxisScale);
+.attr("transform","translate(0,"+yScale(98)+")")
+;
+var xAxis = d3.axisBottom(monthScale).tickFormat(d3.timeFormat("%b"));
 xAxisGroup.call(xAxis);
 
 var yAxisGroup = mySVG.append("g")
-.attr("class","yAxis");
+.attr("class","yAxis")
+.attr("transform","translate(" + xScale(10) + ",0)")
+;
 var yAxis = d3.axisLeft(yAxisScale);
 yAxisGroup.call(yAxis);
+
+
+
+
+
+mySVG.append("text")
+.attr("transform", "translate(" + (width/2) + " ," + (0) + ")")
+.style("text-anchor", "middle")
+.style("font-family", "sans-serif")
+.text("Sao Paulo, Annual Temperature");
+
+mySVG.append("text")
+.attr("transform", "rotate(-90)")
+.attr("y", xScale(5))
+.attr("x",0 - (height / 2))
+.style("text-anchor", "middle")
+.style("font-family", "sans-serif")
+.text("Temp deg C");
+
+
+mySVG.append("text")
+.attr("transform", "translate(" + (width/2-80) + " ," + (height) + ")")
+.style("text-anchor", "left")
+.style("font-family", "sans-serif")
+.text("Average Daily temp C");
+
+mySVG.append("text")
+.attr("transform", "translate(" + (width/2-80) + " ," + (height+20) + ")")
+.style("text-anchor", "left")
+.style("font-family", "sans-serif")
+.text("Mean daily maximum temp C");
+
+mySVG.append("text")
+.attr("transform", "translate(" + (width/2-80) + " ," + (height+40) + ")")
+.style("text-anchor", "left")
+.style("font-family", "sans-serif")
+.text("Mean daily minimum temp C");
+
+var rectangle = mySVG.append("rect")
+.attr("x", (width/2 - 130))
+.attr("y", (height-5))
+.attr("width", xScale(5))
+.attr("height", 1)
+.attr("fill", "none")
+.attr("stroke-width", 1)
+.attr("stroke", "black");
+
+var rectangle = mySVG.append("rect")
+.attr("x", (width/2 - 130))
+.attr("y", (height-5+20))
+.attr("width", xScale(5))
+.attr("height", 1)
+.attr("fill", "none")
+.attr("stroke-width", 1)
+.attr("stroke", "red");
+
+var rectangle = mySVG.append("rect")
+.attr("x", (width/2 - 130))
+.attr("y", (height-5+40))
+.attr("width", xScale(5))
+.attr("height", 1)
+.attr("fill", "none")
+.attr("stroke-width", 1)
+.attr("stroke", "blue");
+
 
 
 var linePath = d3.line()
@@ -52,6 +122,5 @@ var line = mySVG.append("path")
 .attr("stroke-width", 2)
 .attr("fill", "none")
 .attr("d", linePath(dataLow));
-
 
 
