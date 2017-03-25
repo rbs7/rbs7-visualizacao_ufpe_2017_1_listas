@@ -1,6 +1,6 @@
 var margin = {top: 35, right: 10, bottom: 50, left: 10};
 var width = 700 - margin.left - margin.right;
-var height = 400 - margin.top - margin.bottom;
+var height = 500 - margin.top - margin.bottom;
 
 var parseTime = d3.timeParse("%b");
 
@@ -21,21 +21,28 @@ var mySVG = d3.select("body").append("svg")
 .append("g")
 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+var xAxis = d3.axisTop(monthScale).tickFormat(d3.timeFormat("%b")).tickSizeInner(0);
 var xAxisGroup = mySVG.append("g")
 .attr("class","xAxis")
-.attr("transform","translate(0,"+yScale(98)+")")
-;
-var xAxis = d3.axisBottom(monthScale).tickFormat(d3.timeFormat("%b"));
-xAxisGroup.call(xAxis);
+.attr("transform","translate(0,"+yScale(92)+")")
+.call(customXAxis);
 
+var yAxis = d3.axisLeft(yAxisScale).ticks(5).tickSizeInner(-xScale(85)).tickPadding(10);
 var yAxisGroup = mySVG.append("g")
 .attr("class","yAxis")
 .attr("transform","translate(" + xScale(10) + ",0)")
-;
-var yAxis = d3.axisLeft(yAxisScale);
-yAxisGroup.call(yAxis);
+.call(customYAxis);
 
 
+function customXAxis(g) {
+	g.call(xAxis);
+	g.select(".domain").remove();
+}
+
+function customYAxis(g) {
+	g.call(yAxis);
+	g.select(".domain").remove();
+}
 
 
 
