@@ -23,12 +23,19 @@
 						.scale([500]);
 			var path = d3.geoPath()
 						.projection(projection);
+						
+						
+			//Interacoes
+			var zoom = d3.zoom()
+				.scaleExtent([1, 10])
+				.on("zoom", zoomed);
 
 			//Create SVG element
 			var svg = d3.select("body")
 						.append("svg")
 						.attr("width", w)
-						.attr("height", h);
+						.attr("height", h)
+						.call(zoom);
 			
 			var color = d3.scaleLinear();
 			
@@ -64,7 +71,10 @@
 					
 				});
 			});
-
+			
+			function zoomed() {
+				svg.attr("transform", d3.event.transform)
+			}
 			
 			
 			
