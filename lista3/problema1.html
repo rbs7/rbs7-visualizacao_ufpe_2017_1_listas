@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.nodes legend {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+</style>
+<svg width="1500" height="1200"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+var myMap = new Map();
+var mapcount = 0;
+
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d,i) { return i; }))
+    .force("charge", d3.forceManyBody())
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+d3.json("iris.json", function(error, graph) {
+  if (error) throw error;
+  
+  N = 5;
+  var links = new Array();
+
+  for (i = 0; i < graph.length; i++) {
+	neighbors = kNearest(N,graph,i);
+	for (j = 0; j < N; j++) {
+	  links.push({source:i, target:neighbors[j]});
+	}
+  }
+
+  var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(links)
+    .enter().append("line")
+      .attr("stroke-width", 1);
+
+  var node = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("circle")
+    .data(graph)
+    .enter().append("circle")
+      .attr("r", 5)
+	  .attr("fill", function(d) { 
+	    if(!myMap.has(d.species)) {
+			myMap.set(d.species,mapcount);
+			mapcount++;
+		}
+		return color(myMap.get(d.species));
+	  })
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+  node.append("title")
+      .text(function(d) { return d.species; });
+	  
+  simulation
+      .nodes(graph)
+      .on("tick", ticked);
+	  
+  simulation.force("link")
+      .links(links);
+	  
+
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  }
+});
+
+function kNearest(k, data, point) {
+dist = data.map(function(d,i) { return [Math.pow(d.sepal_length-data[point].sepal_length,2)
+								   + Math.pow(d.sepal_width-data[point].sepal_width,2)
+								   + Math.pow(d.petal_length-data[point].petal_length,2)
+								   + Math.pow(d.petal_width-data[point].petal_width,2), i]; } );
+dist[point] = [1e8,point];
+dist.sort();
+dist = dist.slice(0,k);
+dist = dist.map(function(d) { return d[1]; });
+
+return dist;
+}
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+</script>
